@@ -296,15 +296,14 @@ extension SHA2: Updatable {
 
         var processedBytes = 0
         for chunk in accumulated.batched(by: blockSize) {
-            if isLast || (accumulated.count - processedBytes) >= blockSize {
-                switch variant {
-                case .sha224, .sha256:
-                    process32(block: chunk, currentHash: &accumulatedHash32)
-                case .sha384, .sha512:
-                    process64(block: chunk, currentHash: &accumulatedHash64)
-                }
-                processedBytes += chunk.count
+            guard isLast || (accumulated.count - processedBytes) >= blockSize else { continue }
+            switch variant {
+            case .sha224, .sha256:
+                process32(block: chunk, currentHash: &accumulatedHash32)
+            case .sha384, .sha512:
+                process64(block: chunk, currentHash: &accumulatedHash64)
             }
+            processedBytes += chunk.count
         }
         accumulated.removeFirst(processedBytes)
         processedBytesTotalCount += processedBytes
